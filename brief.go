@@ -13,6 +13,17 @@ import (
 	"google.golang.org/api/tasks/v1"
 )
 
+func resolveRefreshToken() (string, error) {
+	cfg, err := loadConfig(configFile)
+	if err == nil && cfg.RefreshToken != "" {
+		return cfg.RefreshToken, nil
+	}
+	if envTok := getEnv(envRefreshToken, ""); envTok != "" {
+		return envTok, nil
+	}
+	return "", fmt.Errorf("not authorized: missing refresh token in ~/.dgtr/config.json (please run \"dgtr login\")")
+}
+
 func newReviewCmd() *cobra.Command {
 	var dateStr string
 	var all bool
@@ -24,19 +35,16 @@ func newReviewCmd() *cobra.Command {
 		Long: `review prints a concise, rule-based summary of modified Google Tasks.
 
 By default it reports on tasks modified between yesterday 00:00:00 and now.
-Pass --date YYYY-MM-DD to target a specific day, or --all to list every open task regardless of modification date.
-
-Requires GOOGLE_TASKS_REFRESH_TOKEN in .env (run "dgtr login" first).`,
+Pass --date YYYY-MM-DD to target a specific day, or --all to list every open task regardless of modification date.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			refresh := getEnv(envRefreshToken, "")
-			if refresh == "" {
-				return fmt.Errorf("missing %s: please run \"dgtr login\" first", envRefreshToken)
+			refresh, err := resolveRefreshToken()
+			if err != nil {
+				return err
 			}
 			clientID := getEnv(envClientID, getDefaultClientID())
-			clientSecret := getEnv(envClientSecret, getDefaultClientSecret())
 
-			srv, err := tasksClient(clientID, clientSecret, refresh)
+			srv, err := tasksClient(clientID, refresh)
 			if err != nil {
 				return err
 			}
@@ -75,19 +83,16 @@ func newOpenCmd() *cobra.Command {
 		Use:     "open",
 		Aliases: []string{"all", "tasks"},
 		Short:   "Print all open (uncompleted) Google Tasks in Markdown format",
-		Long: `open prints a clean Markdown list of all currently open (not-yet-completed) Google Tasks across your task lists.
-
-Requires GOOGLE_TASKS_REFRESH_TOKEN in .env (run "dgtr login" first).`,
-		Args: cobra.NoArgs,
+		Long:    `open prints a clean Markdown list of all currently open (not-yet-completed) Google Tasks across your task lists.`,
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			refresh := getEnv(envRefreshToken, "")
-			if refresh == "" {
-				return fmt.Errorf("missing %s: please run \"dgtr login\" first", envRefreshToken)
+			refresh, err := resolveRefreshToken()
+			if err != nil {
+				return err
 			}
 			clientID := getEnv(envClientID, getDefaultClientID())
-			clientSecret := getEnv(envClientSecret, getDefaultClientSecret())
 
-			srv, err := tasksClient(clientID, clientSecret, refresh)
+			srv, err := tasksClient(clientID, refresh)
 			if err != nil {
 				return err
 			}
@@ -104,11 +109,11 @@ Requires GOOGLE_TASKS_REFRESH_TOKEN in .env (run "dgtr login" first).`,
 }
 
 // tasksClient builds a *tasks.Service authenticated with the stored refresh token.
-func tasksClient(clientID, clientSecret, refresh string) (*tasks.Service, error) {
+func tasksClient(clientID, refresh string) (*tasks.Service, error) {
 	ctx := context.Background()
 	conf := &oauth2.Config{
 		ClientID:     clientID,
-		ClientSecret: clientSecret,
+		ClientSecret: "", // PKCE mode - zero client secret
 		Endpoint:     oauth2.Endpoint{TokenURL: "https://oauth2.googleapis.com/token"},
 		Scopes:       []string{tasksScope},
 	}

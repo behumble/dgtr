@@ -13,14 +13,11 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// Environment variables for Google Tasks OAuth.
 const (
 	envClientID     = "GOOGLE_TASKS_CLIENT_ID"
-	envClientSecret = "GOOGLE_TASKS_CLIENT_SECRET"
 	envRefreshToken = "GOOGLE_TASKS_REFRESH_TOKEN"
+	tasksScope      = "https://www.googleapis.com/auth/tasks"
 )
-
-const tasksScope = "https://www.googleapis.com/auth/tasks"
 
 func getDefaultClientID() string {
 	p1 := "952660384697-degp3rj6g8ueihr3k62"
@@ -28,32 +25,29 @@ func getDefaultClientID() string {
 	return p1 + p2
 }
 
-func getDefaultClientSecret() string {
-	p1 := "GOCSPX-"
-	p2 := "VRCK0kFjDFmaQpRx2P"
-	p3 := "8QbOUbyy48"
-	return p1 + p2 + p3
-}
-
 func newLoginCmd() *cobra.Command {
 	var force bool
 	cmd := &cobra.Command{
 		Use:   "login",
-		Short: "Authorize Google Tasks (OAuth 2.0) and store a refresh token",
-		Long: `login runs the Google OAuth 2.0 flow for the Tasks scope and writes the
-resulting refresh token back into your .env file.`,
+		Short: "Authorize Google Tasks (OAuth 2.0 PKCE) and store refresh token",
+		Long: `login runs the Google OAuth 2.0 PKCE authorization flow for Google Tasks
+and saves the resulting refresh token into ~/.dgtr/config.json.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientID := getEnv(envClientID, getDefaultClientID())
-			clientSecret := getEnv(envClientSecret, getDefaultClientSecret())
-			refresh := getEnv(envRefreshToken, "")
+			cfg, err := loadConfig(configFile)
+			if err != nil {
+				return err
+			}
 
-			if refresh != "" && !force {
-				fmt.Println("GOOGLE_TASKS_REFRESH_TOKEN already set. Use --force to re-authorize.")
+			// Check environment variable fallback as well
+			envToken := getEnv(envRefreshToken, "")
+			if (cfg.RefreshToken != "" || envToken != "") && !force {
+				fmt.Println("Refresh token already set. Use --force to re-authorize.")
 				return nil
 			}
 
-			// Open a localhost listener to receive the redirect.
+			clientID := getEnv(envClientID, getDefaultClientID())
+
 			ln, err := netListen("127.0.0.1:0")
 			if err != nil {
 				return err
@@ -63,14 +57,19 @@ resulting refresh token back into your .env file.`,
 
 			conf := &oauth2.Config{
 				ClientID:     clientID,
-				ClientSecret: clientSecret,
+				ClientSecret: "", // PKCE mode - zero client secret
 				Scopes:       []string{tasksScope},
-				Endpoint:     oauth2.Endpoint{AuthURL: "https://accounts.google.com/o/oauth2/auth", TokenURL: "https://oauth2.googleapis.com/token"},
-				RedirectURL:  redirectURL,
+				Endpoint: oauth2.Endpoint{
+					AuthURL:  "https://accounts.google.com/o/oauth2/auth",
+					TokenURL: "https://oauth2.googleapis.com/token",
+				},
+				RedirectURL: redirectURL,
 			}
 
+			verifier := oauth2.GenerateVerifier()
 			state := randomState()
-			url := conf.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.ApprovalForce)
+			url := conf.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.ApprovalForce, oauth2.VerifierOption(verifier))
+
 			fmt.Println("\nOpen this URL in your browser and sign in with your Google account:")
 			fmt.Println(url)
 			if err := openBrowser(url); err != nil && verbose {
@@ -84,18 +83,25 @@ resulting refresh token back into your .env file.`,
 
 			ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 			defer cancel()
-			tk, err := conf.Exchange(ctx, code)
+
+			tk, err := conf.Exchange(ctx, code, oauth2.VerifierOption(verifier))
 			if err != nil {
 				return fmt.Errorf("token exchange: %w", err)
 			}
 			if tk.RefreshToken == "" {
-				return errors.New("no refresh token returned (did you authorize a Desktop client?)")
+				return errors.New("no refresh token returned from Google OAuth")
 			}
 
-			if err := writeRefreshToken(envFile, tk.RefreshToken); err != nil {
-				return fmt.Errorf("store refresh token: %w", err)
+			cfg.RefreshToken = tk.RefreshToken
+			targetPath := configFile
+			if targetPath == "" {
+				targetPath, _ = defaultConfigPath()
 			}
-			fmt.Println("✓ Authorized. Refresh token stored in", envFile)
+			if err := saveConfig(configFile, cfg); err != nil {
+				return fmt.Errorf("save config: %w", err)
+			}
+
+			fmt.Println("✓ Authorized successfully. Config saved to", targetPath)
 			fmt.Println("Now run: dgtr review")
 			return nil
 		},
@@ -114,26 +120,4 @@ func openBrowser(url string) error {
 	default:
 		return exec.Command("xdg-open", url).Start()
 	}
-}
-
-// writeRefreshToken inserts or updates GOOGLE_TASKS_REFRESH_TOKEN in the .env file.
-func writeRefreshToken(path, refresh string) error {
-	content, err := os.ReadFile(path)
-	if err != nil && !os.IsNotExist(err) {
-		return err
-	}
-	key := envRefreshToken + "="
-	lines := splitLines(string(content))
-	found := false
-	for i, ln := range lines {
-		if len(ln) >= len(key) && ln[:len(key)] == key {
-			lines[i] = key + refresh
-			found = true
-			break
-		}
-	}
-	if !found {
-		lines = append(lines, key+refresh)
-	}
-	return os.WriteFile(path, []byte(joinLines(lines)+"\n"), 0o600)
 }

@@ -13,7 +13,9 @@ import (
 )
 
 var (
-	// envFile is the path to the .env file (overridable via DGTR_ENV or DGTB_ENV).
+	// configFile is the path to the config file (~/.dgtr/config.json by default, overridable via DGTR_CONFIG).
+	configFile string
+	// envFile is the path to the legacy .env file (overridable via DGTR_ENV or DGTB_ENV).
 	envFile string
 	// verbose enables extra logging.
 	verbose bool
@@ -35,8 +37,7 @@ func newRootCmd() *cobra.Command {
 		Long: `dgtr prints a concise review of modifications to your Google Tasks.
 
 It talks directly to the Google Tasks API - no LLM, no per-request cost,
-just a single static binary. Configure your credentials in .env (see
-.gitignore and README), run "dgtr login" once to authorize, then
+just a single static binary. Run "dgtr login" once to authorize, then
 "dgtr review" (or "dgtr brief") to see task changes since yesterday 00:00.
 
 Run "dgtr review --date 2026-08-03" to target a specific day.
@@ -50,7 +51,8 @@ Run "dgtr review --date 2026-08-03" to target a specific day.
 		},
 	}
 
-	root.PersistentFlags().StringVarP(&envFile, "env", "e", defaultEnv, "path to .env file")
+	root.PersistentFlags().StringVarP(&configFile, "config", "c", getEnv("DGTR_CONFIG", ""), "path to config file (default ~/.dgtr/config.json)")
+	root.PersistentFlags().StringVarP(&envFile, "env", "e", defaultEnv, "path to legacy .env file")
 	root.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose logging")
 
 	root.AddCommand(newLoginCmd())
@@ -59,4 +61,3 @@ Run "dgtr review --date 2026-08-03" to target a specific day.
 	root.AddCommand(newVersionCmd())
 	return root
 }
-

@@ -47,6 +47,8 @@ Go가 설치되어 있다면 다음 명령어로 설치할 수 있습니다:
 go install github.com/behumble/dgtr@latest
 ```
 
+*(참고: 설치 후 `dgtr` 명령어를 찾을 수 없다면 `~/go/bin`이 `PATH`에 등록되어 있는지 확인하세요: `export PATH="$HOME/go/bin:$PATH"`)*
+
 ### 사전 빌드된 바이너리 다운로드 (Pre-built Binary)
 [Releases](../../releases) 페이지에서 본인의 OS(macOS, Linux, Windows)에 맞는 실행 바이너리를 직접 다운로드하세요.
 

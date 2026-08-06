@@ -2,7 +2,7 @@
 
 [![English](https://img.shields.io/badge/Language-English-blue.svg)](README.md)
 
-어제 00시부터 현재까지 구글 태스크(Google Tasks)의 변경/수정 내역을 리뷰해 주는 가벼운 단일 바이너리 CLI입니다.
+어제 00시부터 현재까지 구글 태스크(Google Tasks)의 변경/수정 내역을 깔끔한 **마크다운(Markdown)** 형식으로 출력해 주는 가벼운 단일 바이너리 CLI입니다.
 LLM을 쓰지 않고, 요청당 토큰 비용도 없습니다 — **구글 Tasks API에 직접 접속**해
 규칙 기반으로 요약을 만듭니다. OAuth 인증 정보는 **`~/.dgtr/config.json`**에 안전하게 보관되므로,
 누구나 자기 구글 계정으로 터미널 위치(cwd)와 무관하게 사용할 수 있습니다.
@@ -26,15 +26,15 @@ $ dgtr review
 ## 왜 만들었나
 
 대부분의 일일 리뷰/브리핑 도구는 LLM을 붙여서 호출할 때마다 비용이 청구됩니다.
-`dgtr`은 그렇지 않습니다 — 어제 00시 이후 변경된 태스크를 직접 가져와 **결정적으로(format)** 출력합니다.
+`dgtr`은 그렇지 않습니다 — 어제 00시 이후 변경된 태스크를 직접 가져와 마크다운으로 **결정적으로(format)** 출력합니다.
 한계 비용 0, 즉시 실행, 오프라인에서도 잘 동작합니다.
 
 ## 기능
 
 - **`dgtr login`** — 1회 OAuth 2.0 PKCE 인증 → 장기 유효 refresh token을 `~/.dgtr/config.json`에 저장
   (이후 자동 갱신, 재로그인 불필요)
-- **`dgtr review`** (또는 **`dgtr brief`**) — 어제 00시부터 지금까지 변경된 모든 태스크 리뷰
-- **`dgtr open`** (또는 **`dgtr all`**, **`dgtr tasks`**) — 수정일과 무관하게 열려 있는 모든 태스크 출력
+- **`dgtr review`** (또는 **`dgtr brief`**) — 어제 00시부터 지금까지 변경된 태스크를 마크다운 리포트로 출력
+- **`dgtr open`** (또는 **`dgtr all`**, **`dgtr tasks`**) — 수정일과 무관하게 열려 있는 모든 태스크를 마크다운 목록으로 출력
 - **`dgtr review --date YYYY-MM-DD`** — 특정 날짜에 변경된 태스크 지정
 - 단일 정적 바이너리. 터미널의 어떤 작업 경로(`cwd`)에서든 실행 가능.
 

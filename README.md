@@ -2,7 +2,7 @@
 
 [![한국어](https://img.shields.io/badge/Language-%ED%95%9C%EA%B5%AD%EC%96%B4-blue.svg)](README.ko.md)
 
-A tiny, single-binary CLI that prints a concise review of your Google Tasks modifications since yesterday 00:00.
+A tiny, single-binary CLI that prints a concise review of your Google Tasks modifications in clean GitHub Flavored Markdown format since yesterday 00:00.
 No LLM, no per-request token cost — it talks **directly to the Google Tasks
 API** and renders a rule-based summary. OAuth tokens stay safely stored in
 `~/.dgtr/config.json`, so anyone can use it with their own Google account.
@@ -26,15 +26,15 @@ $ dgtr review
 ## Why
 
 Most daily-review tools wrap an LLM and charge per call. `dgtr` doesn't:
-it fetches your tasks and formats them deterministically. Zero marginal cost,
+it fetches your tasks and formats them deterministically as Markdown. Zero marginal cost,
 instant, and works offline-friendly.
 
 ## Features
 
 - **`dgtr login`** — one-time OAuth 2.0 PKCE authorization → stores a long-lived
   refresh token in `~/.dgtr/config.json` (auto-refreshes afterwards, no re-login).
-- **`dgtr review`** (or **`dgtr brief`**) — reviews all tasks modified from yesterday 00:00 until now.
-- **`dgtr open`** (or **`dgtr all`**, **`dgtr tasks`**) — list all open tasks regardless of modification date.
+- **`dgtr review`** (or **`dgtr brief`**) — prints a Markdown review of all tasks modified from yesterday 00:00 until now.
+- **`dgtr open`** (or **`dgtr all`**, **`dgtr tasks`**) — prints a Markdown list of all open tasks regardless of modification date.
 - **`dgtr review --date YYYY-MM-DD`** — target a specific day's modifications.
 - Single static binary. Executable from any working directory (`cwd`).
 

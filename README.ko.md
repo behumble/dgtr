@@ -1,5 +1,7 @@
 # dgtr — Daily Google Tasks Review
 
+[![English](https://img.shields.io/badge/Language-English-blue.svg)](README.md)
+
 어제 00시부터 현재까지 구글 태스크(Google Tasks)의 변경/수정 내역을 리뷰해 주는 가벼운 단일 바이너리 CLI입니다.
 LLM을 쓰지 않고, 요청당 토큰 비용도 없습니다 — **구글 Tasks API에 직접 접속**해
 규칙 기반으로 요약을 만듭니다. OAuth 인증 정보는 **`~/.dgtr/config.json`**에 안전하게 보관되므로,
@@ -102,5 +104,6 @@ dgtr version
 
 ## English
 
+[![English](https://img.shields.io/badge/Language-English-blue.svg)](README.md)
 English version: [README.md](README.md)
 

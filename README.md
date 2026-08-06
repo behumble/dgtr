@@ -1,5 +1,7 @@
 # dgtr — Daily Google Tasks Review
 
+[![한국어](https://img.shields.io/badge/Language-%ED%95%9C%EA%B5%AD%EC%96%B4-blue.svg)](README.ko.md)
+
 A tiny, single-binary CLI that prints a concise review of your Google Tasks modifications since yesterday 00:00.
 No LLM, no per-request token cost — it talks **directly to the Google Tasks
 API** and renders a rule-based summary. OAuth tokens stay safely stored in
@@ -103,5 +105,6 @@ Because `dgtr` costs nothing per run, schedule it freely:
 
 ## 한국어 (Korean)
 
+[![한국어](https://img.shields.io/badge/Language-%ED%95%9C%EA%B5%AD%EC%96%B4-blue.svg)](README.ko.md)
 한국어 버전: [README.ko.md](README.ko.md)
 

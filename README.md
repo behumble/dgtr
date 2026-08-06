@@ -101,10 +101,3 @@ Because `dgtr` costs nothing per run, schedule it freely:
 
 [MIT](LICENSE)
 
----
-
-## 한국어 (Korean)
-
-[![한국어](https://img.shields.io/badge/Language-%ED%95%9C%EA%B5%AD%EC%96%B4-blue.svg)](README.ko.md)
-한국어 버전: [README.ko.md](README.ko.md)
-

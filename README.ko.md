@@ -100,10 +100,3 @@ dgtr version
 
 [MIT](LICENSE)
 
----
-
-## English
-
-[![English](https://img.shields.io/badge/Language-English-blue.svg)](README.md)
-English version: [README.md](README.md)
-

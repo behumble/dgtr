@@ -52,34 +52,17 @@ cd dgtr
 go build -o dgtr .
 ```
 
-## 설정 (사용자당 1회)
+## 설정 (1회만 수행)
 
-각 사용자가 **자신만의** OAuth 클라이언트를 만듭니다 — 공유되는 것은 없습니다.
+원타임 OAuth 인증만 실행하면 됩니다:
 
-1. **Google Cloud 프로젝트 생성**(또는 기존 것 사용):
-   https://console.cloud.google.com/projectselector2
+```bash
+dgtr login
+```
 
-2. 해당 프로젝트에서 **Google Tasks API 사용 설정**:
-   https://console.cloud.google.com/apis/library/tasks.googleapis.com
+브라우저가 열리면 로그인 → 완료. refresh token이 자동으로 `.env`에 저장됩니다. 이후에는 재로그인이 필요 없습니다.
 
-3. **데스크톱(Desktop) OAuth 클라이언트 생성**:
-   https://console.cloud.google.com/apis/credentials \
-   `사용자 인증 정보 만들기 → OAuth 클라이언트 ID → 애플리케이션 유형: 데스크톱 앱`
-   (앱이 아직 *Testing* 상태라면, `API 및 서비스 → OAuth 동의 화면 → 테스트 사용자`에
-   본인 구글 계정을 추가하세요.)
-
-4. **`.env.example`을 `.env`로 복사**하고 클라이언트 id/secret 입력:
-   ```bash
-   cp .env.example .env
-   # .env 편집 -> GOOGLE_TASKS_CLIENT_ID / GOOGLE_TASKS_CLIENT_SECRET
-   ```
-
-5. **인증:**
-   ```bash
-   dgtr login
-   ```
-   브라우저가 열리면 로그인 → 완료. refresh token이 자동으로 `.env`에 저장됩니다.
-   이후에는 재로그인이 필요 없습니다.
+(선택사항: 본인 소유의 커스텀 OAuth Client ID를 사용하고 싶다면 `.env`에 `GOOGLE_TASKS_CLIENT_ID`를 설정할 수 있습니다.)
 
 ## 사용법
 

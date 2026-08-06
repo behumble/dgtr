@@ -26,16 +26,15 @@ func newReviewCmd() *cobra.Command {
 By default it reports on tasks modified between yesterday 00:00:00 and now.
 Pass --date YYYY-MM-DD to target a specific day, or --all to list every open task regardless of modification date.
 
-Requires GOOGLE_TASKS_CLIENT_ID, GOOGLE_TASKS_CLIENT_SECRET and
-GOOGLE_TASKS_REFRESH_TOKEN in .env (run "dgtr login" first).`,
+Requires GOOGLE_TASKS_REFRESH_TOKEN in .env (run "dgtr login" first).`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			refresh := getEnv(envRefreshToken, "")
-			clientID := getEnv(envClientID, "")
-			clientSecret := getEnv(envClientSecret, "")
-			if refresh == "" || clientID == "" || clientSecret == "" {
-				return fmt.Errorf("missing credentials: ensure %s, %s, %s are set in .env (run dgtr login)", envRefreshToken, envClientID, envClientSecret)
+			if refresh == "" {
+				return fmt.Errorf("missing %s: please run \"dgtr login\" first", envRefreshToken)
 			}
+			clientID := getEnv(envClientID, getDefaultClientID())
+			clientSecret := getEnv(envClientSecret, getDefaultClientSecret())
 
 			srv, err := tasksClient(clientID, clientSecret, refresh)
 			if err != nil {
@@ -78,16 +77,15 @@ func newOpenCmd() *cobra.Command {
 		Short:   "Print all open (uncompleted) Google Tasks in Markdown format",
 		Long: `open prints a clean Markdown list of all currently open (not-yet-completed) Google Tasks across your task lists.
 
-Requires GOOGLE_TASKS_CLIENT_ID, GOOGLE_TASKS_CLIENT_SECRET and
-GOOGLE_TASKS_REFRESH_TOKEN in .env (run "dgtr login" first).`,
+Requires GOOGLE_TASKS_REFRESH_TOKEN in .env (run "dgtr login" first).`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			refresh := getEnv(envRefreshToken, "")
-			clientID := getEnv(envClientID, "")
-			clientSecret := getEnv(envClientSecret, "")
-			if refresh == "" || clientID == "" || clientSecret == "" {
-				return fmt.Errorf("missing credentials: ensure %s, %s, %s are set in .env (run dgtr login)", envRefreshToken, envClientID, envClientSecret)
+			if refresh == "" {
+				return fmt.Errorf("missing %s: please run \"dgtr login\" first", envRefreshToken)
 			}
+			clientID := getEnv(envClientID, getDefaultClientID())
+			clientSecret := getEnv(envClientSecret, getDefaultClientSecret())
 
 			srv, err := tasksClient(clientID, clientSecret, refresh)
 			if err != nil {

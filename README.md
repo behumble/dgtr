@@ -52,34 +52,17 @@ cd dgtr
 go build -o dgtr .
 ```
 
-## Setup (one time, per user)
+## Setup (one time)
 
-Every user creates their **own** OAuth client — nothing is shared.
+Simply run the one-time OAuth authorization:
 
-1. **Create a Google Cloud project** (or reuse one):
-   https://console.cloud.google.com/projectselector2
+```bash
+dgtr login
+```
 
-2. **Enable the Google Tasks API** for that project:
-   https://console.cloud.google.com/apis/library/tasks.googleapis.com
+Your browser opens → sign in with your Google account → done. The refresh token is saved to `.env` automatically. Subsequent runs require no re-login.
 
-3. **Create a Desktop OAuth client**:
-   https://console.cloud.google.com/apis/credentials \
-   `Create credentials → OAuth client ID → Application type: Desktop app`
-   (If the app is still in *Testing*, add your Google account under
-   `Audience → Test users`.)
-
-4. **Copy `.env.example` to `.env`** and fill in your client id/secret:
-   ```bash
-   cp .env.example .env
-   # edit .env -> GOOGLE_TASKS_CLIENT_ID / GOOGLE_TASKS_CLIENT_SECRET
-   ```
-
-5. **Authorize:**
-   ```bash
-   dgtr login
-   ```
-   Your browser opens → sign in → done. A refresh token is saved to `.env`
-   automatically. Subsequent runs need no re-login.
+(Optional: If you wish to use your own custom Google OAuth Client ID, set `GOOGLE_TASKS_CLIENT_ID` in `.env`.)
 
 ## Usage
 

@@ -22,9 +22,9 @@ func newBriefCmd() *cobra.Command {
 		Long: `brief prints a concise, rule-based summary of Google Tasks.
 
 By default it reports on yesterday's completed tasks plus any currently open
-(not-yet-completed) tasks with a due date on or before today. Pass --date
-YYYY-MM-DD to target a specific day, or --all to list every open task
-regardless of due date.
+(not-yet-completed) tasks with a due date on or before today, and open tasks
+without a due date. Pass --date YYYY-MM-DD to target a specific day, or --all
+to list every open task regardless of due date.
 
 Requires GOOGLE_TASKS_CLIENT_ID, GOOGLE_TASKS_CLIENT_SECRET and
 GOOGLE_TASKS_REFRESH_TOKEN in .env (run "dgtb login" first).`,
@@ -101,7 +101,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 func buildBrief(ctx context.Context, srv *tasks.Service, target time.Time, all bool) (string, error) {
 	day := target.Format("2006-01-02")
 
-	var open, completed []*tasks.Task
+	var open, completed, openNoDue []*tasks.Task
 	lists, err := srv.Tasklists.List().Do()
 	if err != nil {
 		return "", fmt.Errorf("list task lists: %w", err)
@@ -118,7 +118,11 @@ func buildBrief(ctx context.Context, srv *tasks.Service, target time.Time, all b
 			if t.Completed != nil && dueOn(t.Completed, day) {
 				completed = append(completed, t)
 			} else if t.Status != "completed" {
-				if all || dueOnOrBefore(t.Due, day) {
+				if all {
+					open = append(open, t)
+				} else if t.Due == "" {
+					openNoDue = append(openNoDue, t)
+				} else if dueOnOrBefore(t.Due, day) {
 					open = append(open, t)
 				}
 			}
@@ -174,9 +178,10 @@ func buildBrief(ctx context.Context, srv *tasks.Service, target time.Time, all b
 	} else {
 		listList("Completed", completed)
 		listList("Open (due on/before today)", open)
+		listList("Open (no due date)", openNoDue)
 	}
 
-	if len(completed) == 0 && len(open) == 0 {
+	if len(completed) == 0 && len(open) == 0 && len(openNoDue) == 0 {
 		fmt.Fprintln(&sb, "_No tasks recorded for this period._")
 	}
 	return sb.String(), nil

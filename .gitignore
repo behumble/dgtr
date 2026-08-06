@@ -1,0 +1,10 @@
+# Local environment / secrets
+.env
+
+# Build artifacts
+/dgtb
+/dist/
+
+# Editor / OS
+.DS_Store
+*.swp

@@ -2,8 +2,8 @@
 
 A tiny, single-binary CLI that prints a concise review of your Google Tasks modifications since yesterday 00:00.
 No LLM, no per-request token cost — it talks **directly to the Google Tasks
-API** and renders a rule-based summary. Your credentials stay in your own
-`.env`, so anyone can use it with their own Google account.
+API** and renders a rule-based summary. OAuth tokens stay safely stored in
+`~/.dgtr/config.json`, so anyone can use it with their own Google account.
 
 ```markdown
 $ dgtr review
@@ -29,12 +29,12 @@ instant, and works offline-friendly.
 
 ## Features
 
-- **`dgtr login`** — one-time OAuth 2.0 authorization → stores a long-lived
-  refresh token in your `.env` (auto-refreshes afterwards, no re-login).
+- **`dgtr login`** — one-time OAuth 2.0 PKCE authorization → stores a long-lived
+  refresh token in `~/.dgtr/config.json` (auto-refreshes afterwards, no re-login).
 - **`dgtr review`** (or **`dgtr brief`**) — reviews all tasks modified from yesterday 00:00 until now.
 - **`dgtr open`** (or **`dgtr all`**, **`dgtr tasks`**) — list all open tasks regardless of modification date.
 - **`dgtr review --date YYYY-MM-DD`** — target a specific day's modifications.
-- Single static binary. macOS / Linux / Windows.
+- Single static binary. Executable from any working directory (`cwd`).
 
 ## Install
 
@@ -60,9 +60,9 @@ Simply run the one-time OAuth authorization:
 dgtr login
 ```
 
-Your browser opens → sign in with your Google account → done. The refresh token is saved to `.env` automatically. Subsequent runs require no re-login.
+Your browser opens → sign in with your Google account → done. The refresh token is saved to `~/.dgtr/config.json` automatically. Subsequent runs require no re-login and work from any working directory (`cwd`).
 
-(Optional: If you wish to use your own custom Google OAuth Client ID, set `GOOGLE_TASKS_CLIENT_ID` in `.env`.)
+(Optional: If you wish to use a custom config file path, pass `--config /path/to/config.json` or set `DGTR_CONFIG`.)
 
 ## Usage
 
@@ -74,7 +74,7 @@ dgtr login --force          # re-authorize
 dgtr version
 ```
 
-Use `--env /path/to/.env` (or `DGTR_ENV`) to point at a non-default env file,
+Use `--config /path/to/config.json` (or `DGTR_CONFIG`) to point at a non-default config file,
 e.g. when automating with cron.
 
 ## Automating with cron
@@ -83,13 +83,12 @@ Because `dgtr` costs nothing per run, schedule it freely:
 
 ```cron
 # every weekday at 08:00
-0 8 * * 1-5  cd /path/to/project && ./dgtr review
+0 8 * * 1-5  /usr/local/bin/dgtr review
 ```
 
 ## Security notes
 
-- Your `.env` (client secret + refresh token) is **private**. `.gitignore`
-  excludes it by default — never commit it.
+- Your `~/.dgtr/config.json` token file is **private**. It is created with restrictive `0600` permissions (readable/writable only by your user account).
 - The refresh token is scoped to **tasks only** (`https://www.googleapis.com/auth/tasks`),
   so a leaked token can't touch your email, drive, calendar, etc.
 - `dgtr login` binds the OAuth callback to `127.0.0.1` and validates the

@@ -113,3 +113,9 @@ Because `dgtb` costs nothing per run, schedule it freely:
 ## License
 
 [MIT](LICENSE)
+
+---
+
+## 한국어 (Korean)
+
+한국어 버전: [README.ko.md](README.ko.md)

@@ -40,12 +40,15 @@ instant, and works offline-friendly.
 
 ## Install
 
-### Homebrew (once published) / download a release
-Grab the latest binary from [Releases](../../releases) for your OS, or:
+### Using `go install`
+If you have Go installed on your system:
 
 ```bash
 go install github.com/behumble/dgtr@latest
 ```
+
+### Pre-built Binary
+Download the pre-compiled binary for your OS (macOS, Linux, Windows) from [Releases](../../releases).
 
 ### Build from source
 ```bash

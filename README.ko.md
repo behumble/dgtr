@@ -40,14 +40,17 @@ $ dgtr review
 
 ## 설치
 
-### 바이너리(릴리즈) / Go 설치
-[Releases](../../releases)에서 OS에 맞는 최신 바이너리를 받거나:
+### Go 사용자의 경우 (`go install`)
+Go가 설치되어 있다면 다음 명령어로 설치할 수 있습니다:
 
 ```bash
 go install github.com/behumble/dgtr@latest
 ```
 
-### 소스에서 빌드
+### 사전 빌드된 바이너리 다운로드 (Pre-built Binary)
+[Releases](../../releases) 페이지에서 본인의 OS(macOS, Linux, Windows)에 맞는 실행 바이너리를 직접 다운로드하세요.
+
+### 소스에서 직접 빌드
 ```bash
 git clone https://github.com/behumble/dgtr
 cd dgtr

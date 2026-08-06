@@ -1,36 +1,39 @@
-# dgtb — Daily Google Tasks Brief
+# dgtr — Daily Google Tasks Review
 
-A tiny, single-binary CLI that prints a concise briefing of your Google Tasks.
+A tiny, single-binary CLI that prints a concise review of your Google Tasks modifications since yesterday 00:00.
 No LLM, no per-request token cost — it talks **directly to the Google Tasks
 API** and renders a rule-based summary. Your credentials stay in your own
 `.env`, so anyone can use it with their own Google account.
 
-```
-$ dgtb brief
-## Task briefing for 2026-08-03
+```markdown
+$ dgtr review
+# Daily Google Tasks Review
 
-**Completed:**
-- [x] 2026-08-03 QA review of dashboard ✓ completed 2026-08-03
-- [x] Reply to vendor contract ✓ completed 2026-08-02
+> **Period:** 2026-08-05 00:00 ~ 2026-08-06 20:30
 
-**Open (due on/before today):**
-- [ ] Ship v1.0.0 (due 2026-08-05)
+### Completed (2)
+
+- **QA review of dashboard** *(completed 2026-08-05 | updated 14:32)*
+- **Reply to vendor contract** *(completed 2026-08-05 | updated 16:20)*
+
+### Open (1)
+
+- **Ship v1.0.0** *(due 2026-08-10 | updated 11:15)*
 ```
 
 ## Why
 
-Most daily-briefing tools wrap an LLM and charge per call. `dgtb` doesn't:
+Most daily-review tools wrap an LLM and charge per call. `dgtr` doesn't:
 it fetches your tasks and formats them deterministically. Zero marginal cost,
 instant, and works offline-friendly.
 
 ## Features
 
-- **`dgtb login`** — one-time OAuth 2.0 authorization → stores a long-lived
+- **`dgtr login`** — one-time OAuth 2.0 authorization → stores a long-lived
   refresh token in your `.env` (auto-refreshes afterwards, no re-login).
-- **`dgtb brief`** — yesterday's completed tasks + open tasks due on/before
-  today.
-- **`dgtb brief --date YYYY-MM-DD`** — target a specific day.
-- **`dgtb brief --all`** — list every open task regardless of due date.
+- **`dgtr review`** (or **`dgtr brief`**) — reviews all tasks modified from yesterday 00:00 until now.
+- **`dgtr open`** (or **`dgtr all`**, **`dgtr tasks`**) — list all open tasks regardless of modification date.
+- **`dgtr review --date YYYY-MM-DD`** — target a specific day's modifications.
 - Single static binary. macOS / Linux / Windows.
 
 ## Install
@@ -39,14 +42,14 @@ instant, and works offline-friendly.
 Grab the latest binary from [Releases](../../releases) for your OS, or:
 
 ```bash
-go install github.com/alangoo/dgtb@latest
+go install github.com/behumble/dgtr@latest
 ```
 
 ### Build from source
 ```bash
-git clone https://github.com/alangoo/dgtb
-cd dgtb
-go build -o dgtb .
+git clone https://github.com/behumble/dgtr
+cd dgtr
+go build -o dgtr .
 ```
 
 ## Setup (one time, per user)
@@ -73,7 +76,7 @@ Every user creates their **own** OAuth client — nothing is shared.
 
 5. **Authorize:**
    ```bash
-   dgtb login
+   dgtr login
    ```
    Your browser opens → sign in → done. A refresh token is saved to `.env`
    automatically. Subsequent runs need no re-login.
@@ -81,23 +84,23 @@ Every user creates their **own** OAuth client — nothing is shared.
 ## Usage
 
 ```bash
-dgtb brief                  # yesterday + open tasks
-dgtb brief --date 2026-08-03
-dgtb brief --all
-dgtb login --force          # re-authorize
-dgtb version
+dgtr review                 # modified tasks from yesterday 00:00 until now
+dgtr open                   # all open tasks (or: dgtr all, dgtr tasks)
+dgtr review --date 2026-08-03
+dgtr login --force          # re-authorize
+dgtr version
 ```
 
-Use `--env /path/to/.env` (or `DGTB_ENV`) to point at a non-default env file,
+Use `--env /path/to/.env` (or `DGTR_ENV`) to point at a non-default env file,
 e.g. when automating with cron.
 
 ## Automating with cron
 
-Because `dgtb` costs nothing per run, schedule it freely:
+Because `dgtr` costs nothing per run, schedule it freely:
 
 ```cron
 # every weekday at 08:00
-0 8 * * 1-5  cd /path/to/project && ./dgtb brief
+0 8 * * 1-5  cd /path/to/project && ./dgtr review
 ```
 
 ## Security notes
@@ -106,7 +109,7 @@ Because `dgtb` costs nothing per run, schedule it freely:
   excludes it by default — never commit it.
 - The refresh token is scoped to **tasks only** (`https://www.googleapis.com/auth/tasks`),
   so a leaked token can't touch your email, drive, calendar, etc.
-- `dgtb login` binds the OAuth callback to `127.0.0.1` and validates the
+- `dgtr login` binds the OAuth callback to `127.0.0.1` and validates the
   `state` parameter to prevent CSRF.
 - Revoke access any time at https://myaccount.google.com/permissions
 
@@ -119,3 +122,4 @@ Because `dgtb` costs nothing per run, schedule it freely:
 ## 한국어 (Korean)
 
 한국어 버전: [README.ko.md](README.ko.md)
+

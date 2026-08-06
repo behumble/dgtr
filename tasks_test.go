@@ -5,58 +5,6 @@ import (
 	"time"
 )
 
-func TestDueOn(t *testing.T) {
-	day := "2026-08-03"
-	cases := []struct {
-		ts   *string
-		want bool
-	}{
-		{nil, false},
-		{strPtr("2026-08-03T12:00:00Z"), true},
-		{strPtr("2026-08-03T23:59:59Z"), true},
-		{strPtr("2026-08-02T23:59:59Z"), false},
-		{strPtr("2026-08-04T00:00:00Z"), false},
-		{strPtr("2026-08-03"), true}, // bare date (len>=10 path)
-	}
-	for _, c := range cases {
-		if got := dueOn(c.ts, day); got != c.want {
-			t.Errorf("dueOn(%v, %s) = %v, want %v", c.ts, day, got, c.want)
-		}
-	}
-}
-
-func TestDueOnOrBefore(t *testing.T) {
-	day := "2026-08-03"
-	cases := []struct {
-		due  string
-		want bool
-	}{
-		{"", false},
-		{"2026-08-01", true},
-		{"2026-08-03", true},
-		{"2026-08-04", false},
-		{"2026-08-03T10:00:00Z", true}, // len>=10 path uses first 10 chars
-	}
-	for _, c := range cases {
-		if got := dueOnOrBefore(c.due, day); got != c.want {
-			t.Errorf("dueOnOrBefore(%q, %s) = %v, want %v", c.due, day, got, c.want)
-		}
-	}
-}
-
-func TestIsTodayOrFuture(t *testing.T) {
-	now := time.Now()
-	if !isTodayOrFuture(now) {
-		t.Error("today should be today-or-future")
-	}
-	if !isTodayOrFuture(now.AddDate(0, 0, 1)) {
-		t.Error("tomorrow should be today-or-future")
-	}
-	if isTodayOrFuture(now.AddDate(0, 0, -1)) {
-		t.Error("yesterday should NOT be today-or-future")
-	}
-}
-
 func TestSplitJoinLines(t *testing.T) {
 	in := "a\nb\nc"
 	lines := splitLines(in)
@@ -74,4 +22,32 @@ func TestSplitJoinLines(t *testing.T) {
 	}
 }
 
+func TestIsUpdatedBetween(t *testing.T) {
+	now := time.Now()
+	start := time.Date(now.Year(), now.Month(), now.Day()-1, 0, 0, 0, 0, now.Location())
+	end := now
+
+	yesterdayNoon := time.Date(now.Year(), now.Month(), now.Day()-1, 12, 0, 0, 0, now.Location()).Format(time.RFC3339)
+	todayNow := now.Format(time.RFC3339Nano)
+	twoDaysAgo := time.Date(now.Year(), now.Month(), now.Day()-2, 12, 0, 0, 0, now.Location()).Format(time.RFC3339)
+
+	cases := []struct {
+		updated string
+		want    bool
+	}{
+		{"", false},
+		{yesterdayNoon, true},
+		{todayNow, true},
+		{twoDaysAgo, false},
+	}
+	for _, c := range cases {
+		if got := isUpdatedBetween(c.updated, start, end); got != c.want {
+			t.Errorf("isUpdatedBetween(%q, %v, %v) = %v, want %v", c.updated, start, end, got, c.want)
+		}
+	}
+}
+
 func strPtr(s string) *string { return &s }
+
+
+

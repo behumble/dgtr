@@ -96,7 +96,7 @@ instead of reading them from .env.`,
 				return fmt.Errorf("store refresh token: %w", err)
 			}
 			fmt.Println("✓ Authorized. Refresh token stored in", envFile)
-			fmt.Println("Now run: dgtb brief")
+			fmt.Println("Now run: dgtr review")
 			return nil
 		},
 	}

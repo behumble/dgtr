@@ -1,5 +1,5 @@
-// Command dgtb (Daily Google Tasks Brief) is a lightweight CLI that prints
-// a rule-based briefing of yesterday's completed and in-progress Google Tasks.
+// Command dgtr (Daily Google Tasks Review) is a lightweight CLI that prints
+// a rule-based review of Google Tasks modifications since yesterday 00:00.
 //
 // It calls the Google Tasks API directly (no LLM, no token cost) and keeps
 // everything in a single binary.
@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	// envFile is the path to the .env file (overridable via DGTB_ENV).
+	// envFile is the path to the .env file (overridable via DGTR_ENV or DGTB_ENV).
 	envFile string
 	// verbose enables extra logging.
 	verbose bool
@@ -28,20 +28,21 @@ func main() {
 }
 
 func newRootCmd() *cobra.Command {
+	defaultEnv := getEnv("DGTR_ENV", getEnv("DGTB_ENV", ".env"))
 	root := &cobra.Command{
-		Use:   "dgtb",
-		Short: "Daily Google Tasks Brief - rule-based Google Tasks briefing CLI",
-		Long: `dgtb prints a concise briefing of your Google Tasks.
+		Use:   "dgtr",
+		Short: "Daily Google Tasks Review - rule-based Google Tasks review CLI",
+		Long: `dgtr prints a concise review of modifications to your Google Tasks.
 
 It talks directly to the Google Tasks API - no LLM, no per-request cost,
 just a single static binary. Configure your credentials in .env (see
-.gitignore and README), run "dgtb login" once to authorize, then
-"dgtb brief" whenever you want a briefing.
+.gitignore and README), run "dgtr login" once to authorize, then
+"dgtr review" (or "dgtr brief") to see task changes since yesterday 00:00.
 
-Run "dgtb brief --date 2026-08-03" to target a specific day.
+Run "dgtr review --date 2026-08-03" to target a specific day.
 `,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			envFile = getEnv("DGTB_ENV", ".env")
+			envFile = getEnv("DGTR_ENV", getEnv("DGTB_ENV", ".env"))
 			if err := loadDotEnv(envFile); err != nil {
 				return err
 			}
@@ -49,11 +50,13 @@ Run "dgtb brief --date 2026-08-03" to target a specific day.
 		},
 	}
 
-	root.PersistentFlags().StringVarP(&envFile, "env", "e", getEnv("DGTB_ENV", ".env"), "path to .env file")
+	root.PersistentFlags().StringVarP(&envFile, "env", "e", defaultEnv, "path to .env file")
 	root.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose logging")
 
 	root.AddCommand(newLoginCmd())
-	root.AddCommand(newBriefCmd())
+	root.AddCommand(newReviewCmd())
+	root.AddCommand(newOpenCmd())
 	root.AddCommand(newVersionCmd())
 	return root
 }
+

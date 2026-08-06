@@ -1,4 +1,4 @@
-module github.com/alangoo/dgtb
+module github.com/behumble/dgtr
 
 go 1.26.5
 

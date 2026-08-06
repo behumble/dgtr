@@ -2,6 +2,7 @@
 .env
 
 # Build artifacts
+/dgtr
 /dgtb
 /dist/
 

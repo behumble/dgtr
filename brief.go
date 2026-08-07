@@ -43,7 +43,7 @@ Pass --date YYYY-MM-DD to target a specific day, or --all to list every open tas
 				return err
 			}
 			clientID := getEnv(envClientID, getDefaultClientID())
-			clientSecret := getEnv(envClientSecret, getDefaultClientSecret())
+			clientSecret := getEnv(envClientSecret, "")
 
 			srv, err := tasksClient(clientID, clientSecret, refresh)
 			if err != nil {
@@ -92,7 +92,7 @@ func newOpenCmd() *cobra.Command {
 				return err
 			}
 			clientID := getEnv(envClientID, getDefaultClientID())
-			clientSecret := getEnv(envClientSecret, getDefaultClientSecret())
+			clientSecret := getEnv(envClientSecret, "")
 
 			srv, err := tasksClient(clientID, clientSecret, refresh)
 			if err != nil {

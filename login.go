@@ -21,16 +21,9 @@ const (
 )
 
 func getDefaultClientID() string {
-	p1 := "952660384697-degp3rj6g8ueihr3k62"
-	p2 := "haiieebajtb8c.apps.googleusercontent.com"
+	p1 := "952660384697-nbav4brvoolkri7sd2gcdvrpfahqd8fe"
+	p2 := ".apps.googleusercontent.com"
 	return p1 + p2
-}
-
-func getDefaultClientSecret() string {
-	p1 := "GOCSPX-"
-	p2 := "VRCK0kFjDFmaQpRx2P"
-	p3 := "8QbOUbyy48"
-	return p1 + p2 + p3
 }
 
 func newLoginCmd() *cobra.Command {
@@ -55,7 +48,6 @@ and saves the resulting refresh token into ~/.dgtr/config.json.`,
 			}
 
 			clientID := getEnv(envClientID, getDefaultClientID())
-			clientSecret := getEnv(envClientSecret, getDefaultClientSecret())
 
 			ln, err := netListen("127.0.0.1:0")
 			if err != nil {
@@ -66,7 +58,7 @@ and saves the resulting refresh token into ~/.dgtr/config.json.`,
 
 			conf := &oauth2.Config{
 				ClientID:     clientID,
-				ClientSecret: clientSecret,
+				ClientSecret: "", // Pure Public Client - zero secret
 				Scopes:       []string{tasksScope},
 				Endpoint: oauth2.Endpoint{
 					AuthURL:  "https://accounts.google.com/o/oauth2/auth",

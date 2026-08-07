@@ -77,7 +77,7 @@ and saves the resulting refresh token into ~/.dgtr/config.json.`,
 
 			verifier := oauth2.GenerateVerifier()
 			state := randomState()
-			url := conf.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.ApprovalForce, oauth2.VerifierOption(verifier))
+			url := conf.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.ApprovalForce, oauth2.S256ChallengeOption(verifier))
 
 			fmt.Println("\nOpen this URL in your browser and sign in with your Google account:")
 			fmt.Println(url)

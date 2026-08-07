@@ -67,9 +67,9 @@ Simply run the one-time OAuth authorization:
 dgtr login
 ```
 
-Your browser opens → sign in with your Google account → done. The refresh token is saved to `~/.dgtr/config.json` automatically. Subsequent runs require no re-login and work from any working directory (`cwd`).
-
-(Optional: If you wish to use a custom config file path, pass `--config /path/to/config.json` or set `DGTR_CONFIG`.)
+`dgtr` will prompt for your GCP OAuth Client ID & Client Secret (or you can pass `--client-id` and `--client-secret`).
+Your static credentials will be saved to `~/.dgtr/config.json` and the auto-generated refresh token will be saved to `~/.dgtr/credentials.json`.
+Subsequent runs require no re-login and work from any directory (`cwd`).
 
 ## Usage
 

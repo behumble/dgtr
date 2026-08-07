@@ -14,11 +14,15 @@ import (
 )
 
 func resolveCredentials() (clientID, clientSecret, refreshToken string, err error) {
-	cfg, loadErr := loadConfig(configFile)
-	if loadErr == nil {
+	cfg, cfgErr := loadConfig(configFile)
+	if cfgErr == nil {
 		clientID = cfg.ClientID
 		clientSecret = cfg.ClientSecret
-		refreshToken = cfg.RefreshToken
+	}
+
+	creds, credsErr := loadCredentials("")
+	if credsErr == nil {
+		refreshToken = creds.RefreshToken
 	}
 
 	if clientID == "" {
@@ -32,7 +36,7 @@ func resolveCredentials() (clientID, clientSecret, refreshToken string, err erro
 	}
 
 	if clientID == "" || clientSecret == "" || refreshToken == "" {
-		return "", "", "", fmt.Errorf("missing GCP credentials or refresh token in ~/.dgtr/config.json (please run \"dgtr login\")")
+		return "", "", "", fmt.Errorf("missing GCP credentials or refresh token (please run \"dgtr login\")")
 	}
 
 	return clientID, clientSecret, refreshToken, nil

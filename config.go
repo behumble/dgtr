@@ -7,10 +7,14 @@ import (
 	"path/filepath"
 )
 
-// Config holds user preferences and credentials stored in ~/.dgtr/config.json.
+// Config holds static user preferences stored in ~/.dgtr/config.json.
 type Config struct {
 	ClientID     string `json:"client_id,omitempty"`
 	ClientSecret string `json:"client_secret,omitempty"`
+}
+
+// Credentials holds machine-managed dynamic tokens stored in ~/.dgtr/credentials.json.
+type Credentials struct {
 	RefreshToken string `json:"refresh_token,omitempty"`
 }
 
@@ -32,7 +36,16 @@ func defaultConfigPath() (string, error) {
 	return filepath.Join(dir, "config.json"), nil
 }
 
-// loadConfig reads the config file from path. If the file does not exist, an empty Config is returned.
+// defaultCredentialsPath returns the default credentials file path (~/.dgtr/credentials.json).
+func defaultCredentialsPath() (string, error) {
+	dir, err := defaultConfigDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(dir, "credentials.json"), nil
+}
+
+// loadConfig reads the static config file from path. If the file does not exist, an empty Config is returned.
 func loadConfig(path string) (*Config, error) {
 	if path == "" {
 		p, err := defaultConfigPath()
@@ -79,6 +92,57 @@ func saveConfig(path string, cfg *Config) error {
 
 	if err := os.WriteFile(path, append(data, '\n'), 0o600); err != nil {
 		return fmt.Errorf("write config to %s: %w", path, err)
+	}
+	return nil
+}
+
+// loadCredentials reads the dynamic credentials file from path. If the file does not exist, empty Credentials is returned.
+func loadCredentials(path string) (*Credentials, error) {
+	if path == "" {
+		p, err := defaultCredentialsPath()
+		if err != nil {
+			return nil, err
+		}
+		path = p
+	}
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return &Credentials{}, nil
+		}
+		return nil, fmt.Errorf("read credentials from %s: %w", path, err)
+	}
+
+	var creds Credentials
+	if err := json.Unmarshal(data, &creds); err != nil {
+		return nil, fmt.Errorf("parse credentials from %s: %w", path, err)
+	}
+	return &creds, nil
+}
+
+// saveCredentials writes the credentials file to path with 0600 file permissions.
+func saveCredentials(path string, creds *Credentials) error {
+	if path == "" {
+		p, err := defaultCredentialsPath()
+		if err != nil {
+			return err
+		}
+		path = p
+	}
+
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return fmt.Errorf("create credentials directory %s: %w", dir, err)
+	}
+
+	data, err := json.MarshalIndent(creds, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal credentials: %w", err)
+	}
+
+	if err := os.WriteFile(path, append(data, '\n'), 0o600); err != nil {
+		return fmt.Errorf("write credentials to %s: %w", path, err)
 	}
 	return nil
 }

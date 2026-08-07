@@ -6,49 +6,68 @@ import (
 	"testing"
 )
 
-func TestConfigLoadAndSave(t *testing.T) {
+func TestConfigAndCredentialsLoadSave(t *testing.T) {
 	tmpDir := t.TempDir()
 	cfgPath := filepath.Join(tmpDir, "config.json")
+	credsPath := filepath.Join(tmpDir, "credentials.json")
 
 	// Load non-existent config should return empty Config without error
 	cfg, err := loadConfig(cfgPath)
 	if err != nil {
 		t.Fatalf("loadConfig non-existent returned error: %v", err)
 	}
-	if cfg.RefreshToken != "" {
-		t.Errorf("expected empty refresh_token, got %q", cfg.RefreshToken)
+	if cfg.ClientID != "" || cfg.ClientSecret != "" {
+		t.Errorf("expected empty config, got %+v", cfg)
 	}
 
-	// Save config
+	// Save static config
 	cfg.ClientID = "test_client_id_456"
 	cfg.ClientSecret = "test_client_secret_789"
-	cfg.RefreshToken = "test_refresh_token_123"
 	if err := saveConfig(cfgPath, cfg); err != nil {
 		t.Fatalf("saveConfig returned error: %v", err)
 	}
 
 	// Reload config and verify contents
-	loaded, err := loadConfig(cfgPath)
+	loadedCfg, err := loadConfig(cfgPath)
 	if err != nil {
 		t.Fatalf("loadConfig returned error: %v", err)
 	}
-	if loaded.ClientID != "test_client_id_456" {
-		t.Errorf("expected 'test_client_id_456', got %q", loaded.ClientID)
+	if loadedCfg.ClientID != "test_client_id_456" || loadedCfg.ClientSecret != "test_client_secret_789" {
+		t.Errorf("unexpected loaded config: %+v", loadedCfg)
 	}
-	if loaded.ClientSecret != "test_client_secret_789" {
-		t.Errorf("expected 'test_client_secret_789', got %q", loaded.ClientSecret)
+
+	// Load non-existent credentials
+	creds, err := loadCredentials(credsPath)
+	if err != nil {
+		t.Fatalf("loadCredentials non-existent returned error: %v", err)
 	}
-	if loaded.RefreshToken != "test_refresh_token_123" {
-		t.Errorf("expected 'test_refresh_token_123', got %q", loaded.RefreshToken)
+	if creds.RefreshToken != "" {
+		t.Errorf("expected empty refresh_token, got %q", creds.RefreshToken)
+	}
+
+	// Save dynamic credentials
+	creds.RefreshToken = "test_refresh_token_123"
+	if err := saveCredentials(credsPath, creds); err != nil {
+		t.Fatalf("saveCredentials returned error: %v", err)
+	}
+
+	// Reload credentials and verify
+	loadedCreds, err := loadCredentials(credsPath)
+	if err != nil {
+		t.Fatalf("loadCredentials returned error: %v", err)
+	}
+	if loadedCreds.RefreshToken != "test_refresh_token_123" {
+		t.Errorf("expected 'test_refresh_token_123', got %q", loadedCreds.RefreshToken)
 	}
 
 	// Verify file permissions (0600)
-	info, err := os.Stat(cfgPath)
-	if err != nil {
-		t.Fatalf("stat config file error: %v", err)
-	}
-	mode := info.Mode().Perm()
-	if mode != 0o600 {
-		t.Errorf("expected file mode 0600, got %o", mode)
+	for _, p := range []string{cfgPath, credsPath} {
+		info, err := os.Stat(p)
+		if err != nil {
+			t.Fatalf("stat error for %s: %v", p, err)
+		}
+		if mode := info.Mode().Perm(); mode != 0o600 {
+			t.Errorf("expected file mode 0600 for %s, got %o", p, mode)
+		}
 	}
 }

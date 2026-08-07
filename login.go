@@ -39,9 +39,14 @@ and saves the client_id, client_secret, and refresh token into ~/.dgtr/config.js
 				return err
 			}
 
+			creds, err := loadCredentials("")
+			if err != nil {
+				return err
+			}
+
 			// Check environment variable fallback as well
 			envToken := getEnv(envRefreshToken, "")
-			if (cfg.RefreshToken != "" || envToken != "") && !force {
+			if (creds.RefreshToken != "" || envToken != "") && !force {
 				fmt.Println("Refresh token already set. Use --force to re-authorize.")
 				return nil
 			}
@@ -124,17 +129,24 @@ and saves the client_id, client_secret, and refresh token into ~/.dgtr/config.js
 
 			cfg.ClientID = clientID
 			cfg.ClientSecret = clientSecret
-			cfg.RefreshToken = tk.RefreshToken
+			creds.RefreshToken = tk.RefreshToken
 
-			targetPath := configFile
-			if targetPath == "" {
-				targetPath, _ = defaultConfigPath()
+			cfgPath := configFile
+			if cfgPath == "" {
+				cfgPath, _ = defaultConfigPath()
 			}
+			credsPath, _ := defaultCredentialsPath()
+
 			if err := saveConfig(configFile, cfg); err != nil {
 				return fmt.Errorf("save config: %w", err)
 			}
+			if err := saveCredentials("", creds); err != nil {
+				return fmt.Errorf("save credentials: %w", err)
+			}
 
-			fmt.Println("✓ Authorized successfully. Credentials and token saved to", targetPath)
+			fmt.Println("✓ Authorized successfully.")
+			fmt.Println("  Config saved to:", cfgPath)
+			fmt.Println("  Token saved to: ", credsPath)
 			fmt.Println("Now run: dgtr review")
 			return nil
 		},

@@ -67,9 +67,9 @@ go build -o dgtr .
 dgtr login
 ```
 
-브라우저가 열리면 로그인 → 완료. refresh token이 자동으로 `~/.dgtr/config.json`에 저장됩니다. 이후에는 재로그인이나 별도 설정 파일 복사가 필요 없습니다.
-
-(선택사항: 기본 경로가 아닌 커스텀 설정 파일을 쓰려면 `--config /path/to/config.json` 또는 `DGTR_CONFIG` 환경변수를 설정하세요.)
+`dgtr` 실행 시 GCP OAuth Client ID 및 Client Secret을 묻는 프롬프트가 실행됩니다 (또는 `--client-id`, `--client-secret` 플래그 전달 가능).
+사용자가 작성한 정적 설정은 `~/.dgtr/config.json`에, 프로그램이 자동 생성한 토큰은 `~/.dgtr/credentials.json`에 각각 분리되어 안전하게 저장됩니다 (`0600` 권한).
+이후에는 재로그인 없이 어디서나 자유롭게 실행할 수 있습니다.
 
 ## 사용법
 

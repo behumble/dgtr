@@ -43,8 +43,9 @@ Pass --date YYYY-MM-DD to target a specific day, or --all to list every open tas
 				return err
 			}
 			clientID := getEnv(envClientID, getDefaultClientID())
+			clientSecret := getEnv(envClientSecret, getDefaultClientSecret())
 
-			srv, err := tasksClient(clientID, refresh)
+			srv, err := tasksClient(clientID, clientSecret, refresh)
 			if err != nil {
 				return err
 			}
@@ -91,8 +92,9 @@ func newOpenCmd() *cobra.Command {
 				return err
 			}
 			clientID := getEnv(envClientID, getDefaultClientID())
+			clientSecret := getEnv(envClientSecret, getDefaultClientSecret())
 
-			srv, err := tasksClient(clientID, refresh)
+			srv, err := tasksClient(clientID, clientSecret, refresh)
 			if err != nil {
 				return err
 			}
@@ -109,11 +111,11 @@ func newOpenCmd() *cobra.Command {
 }
 
 // tasksClient builds a *tasks.Service authenticated with the stored refresh token.
-func tasksClient(clientID, refresh string) (*tasks.Service, error) {
+func tasksClient(clientID, clientSecret, refresh string) (*tasks.Service, error) {
 	ctx := context.Background()
 	conf := &oauth2.Config{
 		ClientID:     clientID,
-		ClientSecret: "", // PKCE mode - zero client secret
+		ClientSecret: clientSecret,
 		Endpoint:     oauth2.Endpoint{TokenURL: "https://oauth2.googleapis.com/token"},
 		Scopes:       []string{tasksScope},
 	}

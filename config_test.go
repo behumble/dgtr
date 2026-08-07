@@ -20,6 +20,8 @@ func TestConfigLoadAndSave(t *testing.T) {
 	}
 
 	// Save config
+	cfg.ClientID = "test_client_id_456"
+	cfg.ClientSecret = "test_client_secret_789"
 	cfg.RefreshToken = "test_refresh_token_123"
 	if err := saveConfig(cfgPath, cfg); err != nil {
 		t.Fatalf("saveConfig returned error: %v", err)
@@ -29,6 +31,12 @@ func TestConfigLoadAndSave(t *testing.T) {
 	loaded, err := loadConfig(cfgPath)
 	if err != nil {
 		t.Fatalf("loadConfig returned error: %v", err)
+	}
+	if loaded.ClientID != "test_client_id_456" {
+		t.Errorf("expected 'test_client_id_456', got %q", loaded.ClientID)
+	}
+	if loaded.ClientSecret != "test_client_secret_789" {
+		t.Errorf("expected 'test_client_secret_789', got %q", loaded.ClientSecret)
 	}
 	if loaded.RefreshToken != "test_refresh_token_123" {
 		t.Errorf("expected 'test_refresh_token_123', got %q", loaded.RefreshToken)

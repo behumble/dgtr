@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -20,19 +22,16 @@ const (
 	tasksScope      = "https://www.googleapis.com/auth/tasks"
 )
 
-func getDefaultClientID() string {
-	p1 := "952660384697-nbav4brvoolkri7sd2gcdvrpfahqd8fe"
-	p2 := ".apps.googleusercontent.com"
-	return p1 + p2
-}
-
 func newLoginCmd() *cobra.Command {
 	var force bool
+	var flagClientID string
+	var flagClientSecret string
+
 	cmd := &cobra.Command{
 		Use:   "login",
-		Short: "Authorize Google Tasks (OAuth 2.0 PKCE) and store refresh token",
+		Short: "Authorize Google Tasks (OAuth 2.0 PKCE) and store credentials",
 		Long: `login runs the Google OAuth 2.0 PKCE authorization flow for Google Tasks
-and saves the resulting refresh token into ~/.dgtr/config.json.`,
+and saves the client_id, client_secret, and refresh token into ~/.dgtr/config.json.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := loadConfig(configFile)
@@ -47,7 +46,37 @@ and saves the resulting refresh token into ~/.dgtr/config.json.`,
 				return nil
 			}
 
-			clientID := getEnv(envClientID, getDefaultClientID())
+			// Priority: Flag > Env > Config
+			clientID := flagClientID
+			if clientID == "" {
+				clientID = getEnv(envClientID, cfg.ClientID)
+			}
+
+			clientSecret := flagClientSecret
+			if clientSecret == "" {
+				clientSecret = getEnv(envClientSecret, cfg.ClientSecret)
+			}
+
+			// Prompt if credentials are missing
+			if clientID == "" {
+				val, err := promptInput("Enter your GCP OAuth Client ID: ")
+				if err != nil {
+					return fmt.Errorf("read Client ID: %w", err)
+				}
+				clientID = val
+			}
+
+			if clientSecret == "" {
+				val, err := promptInput("Enter your GCP OAuth Client Secret: ")
+				if err != nil {
+					return fmt.Errorf("read Client Secret: %w", err)
+				}
+				clientSecret = val
+			}
+
+			if clientID == "" || clientSecret == "" {
+				return errors.New("GCP OAuth Client ID and Client Secret are required")
+			}
 
 			ln, err := netListen("127.0.0.1:0")
 			if err != nil {
@@ -58,7 +87,7 @@ and saves the resulting refresh token into ~/.dgtr/config.json.`,
 
 			conf := &oauth2.Config{
 				ClientID:     clientID,
-				ClientSecret: "", // Pure Public Client - zero secret
+				ClientSecret: clientSecret,
 				Scopes:       []string{tasksScope},
 				Endpoint: oauth2.Endpoint{
 					AuthURL:  "https://accounts.google.com/o/oauth2/auth",
@@ -93,7 +122,10 @@ and saves the resulting refresh token into ~/.dgtr/config.json.`,
 				return errors.New("no refresh token returned from Google OAuth")
 			}
 
+			cfg.ClientID = clientID
+			cfg.ClientSecret = clientSecret
 			cfg.RefreshToken = tk.RefreshToken
+
 			targetPath := configFile
 			if targetPath == "" {
 				targetPath, _ = defaultConfigPath()
@@ -102,13 +134,25 @@ and saves the resulting refresh token into ~/.dgtr/config.json.`,
 				return fmt.Errorf("save config: %w", err)
 			}
 
-			fmt.Println("✓ Authorized successfully. Config saved to", targetPath)
+			fmt.Println("✓ Authorized successfully. Credentials and token saved to", targetPath)
 			fmt.Println("Now run: dgtr review")
 			return nil
 		},
 	}
 	cmd.Flags().BoolVar(&force, "force", false, "re-run the OAuth flow even if a token exists")
+	cmd.Flags().StringVar(&flagClientID, "client-id", "", "GCP OAuth Client ID")
+	cmd.Flags().StringVar(&flagClientSecret, "client-secret", "", "GCP OAuth Client Secret")
 	return cmd
+}
+
+func promptInput(prompt string) (string, error) {
+	fmt.Print(prompt)
+	reader := bufio.NewReader(os.Stdin)
+	line, err := reader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(line), nil
 }
 
 // openBrowser attempts to open url in the default browser.

@@ -13,15 +13,29 @@ import (
 	"google.golang.org/api/tasks/v1"
 )
 
-func resolveRefreshToken() (string, error) {
-	cfg, err := loadConfig(configFile)
-	if err == nil && cfg.RefreshToken != "" {
-		return cfg.RefreshToken, nil
+func resolveCredentials() (clientID, clientSecret, refreshToken string, err error) {
+	cfg, loadErr := loadConfig(configFile)
+	if loadErr == nil {
+		clientID = cfg.ClientID
+		clientSecret = cfg.ClientSecret
+		refreshToken = cfg.RefreshToken
 	}
-	if envTok := getEnv(envRefreshToken, ""); envTok != "" {
-		return envTok, nil
+
+	if clientID == "" {
+		clientID = getEnv(envClientID, "")
 	}
-	return "", fmt.Errorf("not authorized: missing refresh token in ~/.dgtr/config.json (please run \"dgtr login\")")
+	if clientSecret == "" {
+		clientSecret = getEnv(envClientSecret, "")
+	}
+	if refreshToken == "" {
+		refreshToken = getEnv(envRefreshToken, "")
+	}
+
+	if clientID == "" || clientSecret == "" || refreshToken == "" {
+		return "", "", "", fmt.Errorf("missing GCP credentials or refresh token in ~/.dgtr/config.json (please run \"dgtr login\")")
+	}
+
+	return clientID, clientSecret, refreshToken, nil
 }
 
 func newReviewCmd() *cobra.Command {
@@ -38,12 +52,10 @@ By default it reports on tasks modified between yesterday 00:00:00 and now.
 Pass --date YYYY-MM-DD to target a specific day, or --all to list every open task regardless of modification date.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			refresh, err := resolveRefreshToken()
+			clientID, clientSecret, refresh, err := resolveCredentials()
 			if err != nil {
 				return err
 			}
-			clientID := getEnv(envClientID, getDefaultClientID())
-			clientSecret := getEnv(envClientSecret, "")
 
 			srv, err := tasksClient(clientID, clientSecret, refresh)
 			if err != nil {
@@ -87,12 +99,10 @@ func newOpenCmd() *cobra.Command {
 		Long:    `open prints a clean Markdown list of all currently open (not-yet-completed) Google Tasks across your task lists.`,
 		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			refresh, err := resolveRefreshToken()
+			clientID, clientSecret, refresh, err := resolveCredentials()
 			if err != nil {
 				return err
 			}
-			clientID := getEnv(envClientID, getDefaultClientID())
-			clientSecret := getEnv(envClientSecret, "")
 
 			srv, err := tasksClient(clientID, clientSecret, refresh)
 			if err != nil {

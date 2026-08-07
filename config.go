@@ -9,6 +9,8 @@ import (
 
 // Config holds user preferences and credentials stored in ~/.dgtr/config.json.
 type Config struct {
+	ClientID     string `json:"client_id,omitempty"`
+	ClientSecret string `json:"client_secret,omitempty"`
 	RefreshToken string `json:"refresh_token,omitempty"`
 }
 

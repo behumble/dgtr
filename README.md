@@ -40,7 +40,7 @@ instant, and works offline-friendly.
 
 ## Install
 
-### Using `go install`
+### Using `go install` (recommended)
 If you have Go installed on your system:
 
 ```bash
@@ -49,8 +49,7 @@ go install github.com/behumble/dgtr@latest
 
 *(Note: Ensure `$HOME/go/bin` is in your `PATH` if `dgtr` is not recognized after installation: `export PATH="$HOME/go/bin:$PATH"`)*
 
-### Pre-built Binary
-Download the pre-compiled binary for your OS (macOS, Linux, Windows) from [Releases](../../releases).
+Just one command — no pre-built binaries, no Releases. See `go install` docs: https://go.dev/ref/mod#go-install
 
 ### Build from source
 ```bash

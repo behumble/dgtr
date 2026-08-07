@@ -40,7 +40,7 @@ $ dgtr review
 
 ## 설치
 
-### Go 사용자의 경우 (`go install`)
+### Go 사용자의 경우 (`go install`) — 권장
 Go가 설치되어 있다면 다음 명령어로 설치할 수 있습니다:
 
 ```bash
@@ -49,8 +49,7 @@ go install github.com/behumble/dgtr@latest
 
 *(참고: 설치 후 `dgtr` 명령어를 찾을 수 없다면 `~/go/bin`이 `PATH`에 등록되어 있는지 확인하세요: `export PATH="$HOME/go/bin:$PATH"`)*
 
-### 사전 빌드된 바이너리 다운로드 (Pre-built Binary)
-[Releases](../../releases) 페이지에서 본인의 OS(macOS, Linux, Windows)에 맞는 실행 바이너리를 직접 다운로드하세요.
+단 하나의 명령으로 충분합니다 — 사전 빌드된 바이너리도, Releases도 필요 없습니다. (`go install` 문서: https://go.dev/ref/mod#go-install)
 
 ### 소스에서 직접 빌드
 ```bash

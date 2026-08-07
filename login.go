@@ -20,8 +20,8 @@ const (
 )
 
 func getDefaultClientID() string {
-	p1 := "952660384697-degp3rj6g8ueihr3k62"
-	p2 := "haiieebajtb8c.apps.googleusercontent.com"
+	p1 := "952660384697-nbav4brvoolkri7sd2gcdvrpfahqd8fe"
+	p2 := ".apps.googleusercontent.com"
 	return p1 + p2
 }
 
